@@ -111,50 +111,91 @@ double OuterLoopController::computeOuterLoopSignal(double rad_act, double rad_re
     ////
     /// Outer Loop Algorithm
     ////
-    double pre_gain = 1e-4;  // gain to scale down the radius error into the appropriate order of magnitude
+    //UW_Mode2 pre_gain = 5e-3 (simulator)
+	//UW_Mode3 pre_gain = 5e-3 (simulator) 
+    double pre_gain = 5e-3;  // gain to scale down the radius error into the appropriate order of magnitude
     double r_err = rad_ref - rad_act;
 
-    double dr_gain = 1e-2; // gain to scale down the radius derivative error
+	//UW_Mode_2 dr_gain = 5e-2 (simulator)
+	//UW_Mode_3 dr_gain = 5e-2 (simulator) 
+    double dr_gain = 2.5e-2; // gain to scale down the radius derivative error
     double dt = 0.02; //delta-t for computing the radius derivative
+	//double forget_factor = 5/10; //forgetting factor to reduce derivative input signal when no new radius information
 
     //radius derivative, used to maintain a flight path tangential to the desired orbit
+	// Ryan Grimes changed if statement to rad_act - last_rad_act == 0 instead of last_rad_act == 0
     if (last_rad_act == 0){
         //do nothing, can't compute derivative
     }
     else if (dr_count == 0){
         dr_1 = (rad_act - last_rad_act)/dt;
+
+		//if (rad_act - last_rad_act == 0){
+			//dr_1 = dr_5*forget_factor;
+			//r_err = r_err - dr_1*dt_OLC;
+		//}
+
         dr_count++;
     }
     else if (dr_count == 1){
         dr_2 = (rad_act - last_rad_act)/dt;
+
+		//if (rad_act - last_rad_act == 0){
+			//dr_2 = dr_1*forget_factor;
+			//r_err = r_err - dr_2*dt_OLC;
+		//}
+
         dr_count++;
     }
     else if (dr_count == 2){
         dr_3 = (rad_act - last_rad_act)/dt;
+
+		//if (rad_act - last_rad_act == 0){
+			//dr_3 = dr_2*forget_factor;
+			//r_err = r_err - dr_3*dt_OLC;
+		//}
+
         dr_count++;
     }
     else if (dr_count == 3){
         dr_4 = (rad_act - last_rad_act)/dt;
+
+		//if (rad_act - last_rad_act == 0){
+			//dr_4 = dr_3*forget_factor;
+			//r_err = r_err - dr_4*dt_OLC;
+		//}
+
         dr_count++;
     }
     else if (dr_count == 4){
         dr_5 = (rad_act - last_rad_act)/dt;
+
+		//if (rad_act - last_rad_act == 0){
+			//dr_5 = dr_4*forget_factor;
+			//r_err = r_err - dr_5*dt_OLC;
+		//}
+
         dr_count = 0;
     }
     dr = (dr_1+dr_2+dr_3+dr_4+dr_5)/5; //averages 5 sequential derivatives to reduce noise
 
+	//Ryan Grimes disabled the derivative gain correction sign factor (because he thinks its incorrect)
     //This makes sure the radius derivative gain will have the correct sign
-    if ((r_err<0 && rad_act>last_rad_act) || (r_err>0 && rad_act<last_rad_act))
-        dr = -dr;
+    //if ((r_err<0 && rad_act>last_rad_act) || (r_err>0 && rad_act<last_rad_act))
+        //dr = -dr;
 
-    double forward_gain = OuterLoopController::activateController() * pre_gain * Kp_outer;
-    psiDotErr = r_err * forward_gain * -1 + dr_gain*dr;
+	//Ryan Grimes disabled the fade in gain application to the forward gain because of its negative impact on wind drift correction
+    //double forward_gain = OuterLoopController::activateController() * pre_gain * Kp_outer;
+	double forward_gain = pre_gain * Kp_outer;
+	psiDotErr = r_err * forward_gain * -1 + dr_gain*dr;
+
 
     // signal saturation
-    if (psiDotErr < -0.1) {
-        psiDotErr = -0.1;
-    } else if (psiDotErr > 0.1) {
-        psiDotErr = 0.1;
+	// Ryan Grimes increased max and min psiDotErr values (was 0.1)
+    if (psiDotErr < -0.5) {
+        psiDotErr = -0.5;
+    } else if (psiDotErr > 0.5) {
+        psiDotErr = 0.5;
     }
 
     // save input information
@@ -172,6 +213,7 @@ double OuterLoopController::computeOuterLoopSignal(double rad_act, double rad_re
 ///
 /// Side-effects:   - none
 ////
+
 double OuterLoopController::activateController()
 {
     ////

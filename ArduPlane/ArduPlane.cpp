@@ -571,9 +571,14 @@ void Plane::update_flight_mode(void)
 		}
 		case UW_MODE_2:{
 			//dt used for ILCintegrator
-			int dt = 0.02; //Seconds
+			double dt = 0.02; //Seconds
 			//Set next waypoint to the guided waypoint
 			next_WP_loc = guided_WP_loc;
+			//Ensure guided WP has been set
+			//If not, set desired loiter location to home WP
+			if (guided_WP_loc.lat == 0 && guided_WP_loc.lng == 0) {
+				next_WP_loc = home;
+			}
 			//radius
 			double rad_act = get_distance(current_loc, next_WP_loc); //(m)
 			double rad_ref = g.uw_radius; //(m)
@@ -594,9 +599,27 @@ void Plane::update_flight_mode(void)
 
 			double psiDotErr = uw_mode_2_state.OLC.computeOuterLoopSignal(rad_act, rad_ref)*g.uw_gain_outer;
 
-			ControlSurfaceDeflections CSD = uw_mode_2_state.ILC.computeControl(psiDotErr, p, q, r, phi, theta, uB, vB, wB, rad_ref, alt_ref, alt, dt);
+			ControlSurfaceDeflections CSD = uw_mode_2_state.ILC.computeControl(psiDotErr, p, q, r, phi, theta, uB, vB, wB, rad_act, alt_ref, alt, dt);
 
-			channel_throttle->servo_out = 40;
+			//Calculate desired throttle setting
+
+			double thr_des = 50+(rad_ref-rad_act);
+
+			//Set limitations on throttle settings
+
+			if (thr_des > 100){
+				thr_des = 100;
+			}
+			else if (thr_des < 25){
+				thr_des = 25;
+			}
+
+			//Set desired throttle setting
+
+			channel_throttle->servo_out = thr_des;
+
+			//Set desired deflection angles
+
 			channel_roll->servo_out = -g.uw_gain_aileron*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
 			channel_pitch->servo_out = -g.uw_gain_elevator*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
 			steering_control.steering = steering_control.rudder = -g.uw_gain_rudder*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
@@ -605,9 +628,12 @@ void Plane::update_flight_mode(void)
 
 		case UW_MODE_3:{
 			//dt used for ILCintegrator
-			int dt = 0.02; //Seconds
+			double dt = 0.02; //Seconds
 			//radius
-			double rad_act = g.uw_act_radius; //(m)
+			uint8_t ch = 7; //CH_8
+			double rad_act_pwm = hal.rcin->read(ch); //(pwm)
+			double rad_act = rad_act_pwm/100; //(m)
+			//double rad_act = g.uw_act_radius; //(m)
 			double rad_ref = g.uw_radius; //(m)
 			//altitude
 			double alt = relative_altitude(); //(m)
@@ -626,9 +652,27 @@ void Plane::update_flight_mode(void)
 
 			double psiDotErr = uw_mode_2_state.OLC.computeOuterLoopSignal(rad_act, rad_ref)*g.uw_gain_outer;
 
-			ControlSurfaceDeflections CSD = uw_mode_2_state.ILC.computeControl(psiDotErr, p, q, r, phi, theta, uB, vB, wB, rad_ref, alt_ref, alt, dt);
+			ControlSurfaceDeflections CSD = uw_mode_2_state.ILC.computeControl(psiDotErr, p, q, r, phi, theta, uB, vB, wB, rad_act, alt_ref, alt, dt);
 
-			channel_throttle->servo_out = 40;
+			//Calculate desired throttle setting
+
+			double thr_des = 50+(rad_ref-rad_act);
+
+			//Set limitations on throttle settings
+
+			if (thr_des > 100){
+				thr_des = 100;
+			}
+			else if (thr_des < 25){
+				thr_des = 25;
+			}
+
+			//Set desired throttle setting
+
+			channel_throttle->servo_out = thr_des;
+
+			//Set desired deflection angles
+
 			channel_roll->servo_out = -g.uw_gain_aileron*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
 			channel_pitch->servo_out = -g.uw_gain_elevator*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
 			steering_control.steering = steering_control.rudder = -g.uw_gain_rudder*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
@@ -637,40 +681,15 @@ void Plane::update_flight_mode(void)
 		
 		case UW_MODE_4:{
 
-			//roll, pitch and yaw angles
-			double phi		= ahrs.roll;	// (rad)
-			double theta	= ahrs.pitch;	// (rad)
-			double psi 		= ahrs.yaw;		// (rad)
+			uint8_t ch = 7; //CH_8
+			double rad_act_pwm = hal.rcin->read(ch); //(pwm)
 
-			//time
-			uint32_t timer = micros(); // microseconds
+			channel_throttle->servo_out= 50;
+			channel_roll->servo_out = 500;
+			channel_pitch->servo_out = -500;
+			steering_control.steering = steering_control.rudder = rad_act_pwm;
 
-			//period
-			double T = 10.0; // seconds
-
-			//channel 1: sine wave oscillates between 4500 and -4500 
-			channel_roll->servo_out = 4500*sin(2*3.14/T*timer/1000); //Units: centi-degrees
-
-			//channel 2: servo's deflection angle equals twice the pitch angle
-			channel_pitch->servo_out = 2*theta*100*180/3.14; //Units: centi-degrees
-
-			//channel 3
-			calc_throttle();
-
-			//channel 4: servo's deflection angle equals twice the yaw angle
-			channel_rudder->servo_out = 2*psi*100*180/3.14; //Units: centi-degrees
-
-			//channel 5: cosine wave oscillates between 1000 pwm and 2000 pwm
-			g.rc_5.set_pwm(1500 + 500*cos(2*3.14/T*timer/1000));
-
-			//channel 6: Square wave switches between 1000 pwm and 2000 pwm
-			g.rc_6.set_pwm(sin(2.0*3.14/T*timer/1000.0)>=0.0 ? 2000.0:1000.0);
-
-			//channel 7: sine wave oscillates between 1200 pwm and 1800 pwm
-			g.rc_7.set_pwm(1500 + 300*sin(2*3.14/T*timer/1000));
-
-			//channel 8: Square wave switching between 1200 pwm and 1800 pwm
-			g.rc_8.set_pwm(sin(2.0*3.14/T*timer/1000.0)>=0.0 ? 1800.0:1200.0);
+			
 			break;
 		}
 		//UWAFSL END

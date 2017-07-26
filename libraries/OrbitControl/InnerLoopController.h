@@ -47,7 +47,7 @@ public:
 
 	///////////// Public interface methods ///////////////////////////////
 	ControlSurfaceDeflections computeControl(double psiDotErr, double p, double q, double r,
-		double phi, double theta, double uB, double vB, double wB, double rad_ref, double alt_ref, double alt, double dt);
+		double phi, double theta, double uB, double vB, double wB, double rad_act, double alt_ref, double alt, double dt);
 	
 	// ====== Get/Set Functions ==========================
 
@@ -92,7 +92,8 @@ private:
 	double last_uB;
 	double last_vB;
 	double last_wB;
-	double last_rad_ref;
+	//double last_rad_ref;
+	double last_rad_act; //Ryan Grimes added rad_act information
 	double last_alt_ref;
 	double last_alt; 
 	double last_dt;

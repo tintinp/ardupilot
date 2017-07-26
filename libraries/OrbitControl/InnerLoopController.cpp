@@ -40,10 +40,10 @@
 ////
 InnerLoopController::InnerLoopController()
 {
-	kPhi = 1.5;   // roll loop forward gain
+	kPhi = 3;   // roll loop forward gain
 	kP = 0.5;       // roll loop damping gain
-	kR = 0.5;       // yaw damper gain
-	kTheta = 1.5;   // pitch loop forward gain
+	kR = 1;       // yaw damper gain
+	kTheta = 3;   // pitch loop forward gain
 	kQ = 0.5;     // pitch loop damping gain
 	kAlt = 0.5;   // altitude loop forward gain
 
@@ -61,7 +61,8 @@ InnerLoopController::InnerLoopController()
 	last_uB = 0;
 	last_vB = 0;
 	last_wB = 0;
-	last_rad_ref = 0;
+	//last_rad_ref = 0;
+	last_rad_act = 0; //Ryan Grimes added rad_act information
 	last_alt_ref = 0;
 	last_alt = 0; 
 	last_dt = 0;
@@ -98,6 +99,7 @@ InnerLoopController::~InnerLoopController()
 ///                 - vB        = velocity in y-direction (m/s)
 ///                 - wB        = velocity in z-direction (m/s)
 ///                 - rad_ref   = reference radius (m)
+///                 - rad_act   = actual radius (m)
 ///                 - alt_ref   = reference altitude (m)
 ///                 - alt       = actual altitude (m)
 ///                 - dt        = sample time (s)
@@ -109,12 +111,12 @@ InnerLoopController::~InnerLoopController()
 /// Side-effects:	- none
 ////
 ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, double p, double q, double r, 
-		double phi, double theta, double uB, double vB, double wB, double rad_ref, double alt_ref, double alt, double dt)
+		double phi, double theta, double uB, double vB, double wB, double rad_act, double alt_ref, double alt, double dt)
 {
 	////
 	/// Check input data range (subject to change depending on aircraft specification)
 	////
-	if (psiDotErr>0.5 || psiDotErr<-0.5)
+	if (psiDotErr>1 || psiDotErr<-1)
 	{
 		// invalid signal from outer loop controller
 		//throw std::runtime_error("InnerLoopController Error: Invalid outer loop signal");
@@ -163,9 +165,13 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 		alt = last_alt;
 	}
 
-	if (rad_ref>10000 || rad_ref<0) {
+	//if (rad_ref>10000 || rad_ref<0) {
 		// invalid reference radius input
-		rad_ref = last_rad_ref;
+		//rad_ref = last_rad_ref;
+	//}
+	if (rad_act>10000 || rad_act<0) {
+		// invalid actual radius input
+		rad_act = last_rad_act;
 	}
 	if (alt_ref>5000 || alt_ref<0) {
 		// invalid altitude reference input
@@ -185,14 +191,26 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	////
 	/// Inner Loop Interface
 	////
+
+	//Ryan Grimes reference heading rate to be (vA/rad_act) instead of (vA/rad_ref)
+	//Ryan Grimes updated r_ref equation to multiply by cos(phi) instead of dividing by cos(phi)
 	double vA = sqrt(uB*uB + vB*vB + wB*wB);
-	double psiDot = psiDotErr + vA/rad_ref;
-	double r_ref = vA/(rad_ref*cos(phi));
+	double psiDot = psiDotErr + (vA/rad_act); //Ryan Grimes added rad_act information
+	double r_ref = (vA/rad_act)*cos(phi);
 	
 	////
 	/// Roll Inner Loop
 	////
-	double phi_e = atan((psiDot*vA) * (1/g)) - phi;
+	double phi_cmd = atan((psiDot*vA) * (1/g));
+
+	//Ryan Grimes implemented limitations on desired bank angle
+	if (phi_cmd < -60) {
+		phi_cmd = -60;
+	} else if (phi_cmd > 60) {
+		phi_cmd = 60;
+	}
+
+	double phi_e = phi_cmd - phi;
 	double dA = -(phi_e*kPhi - p*kP);
 
 	////
@@ -221,6 +239,13 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	}
 	double theta_cmd = (alt_e*kAlt + intAltitude) * (pi/180);
 
+	// Ryan Grimes implemented limitations on desired pitch
+	if (theta_cmd < -45) {
+		theta_cmd = -45;
+	} else if (theta_cmd > 45) {
+		theta_cmd = 45;
+	}
+
 	////
 	/// Pitch Inner Loop
 	////
@@ -237,7 +262,8 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	last_uB = uB;
 	last_vB = vB;
 	last_wB = wB;
-	last_rad_ref = rad_ref;
+	//last_rad_ref = rad_ref;
+	last_rad_act = rad_act; // Ryan Grimes added rad_act information
 	last_alt_ref = alt_ref;
 	last_alt = alt;
 	last_dt = dt;
