@@ -111,69 +111,69 @@ double OuterLoopController::computeOuterLoopSignal(double rad_act, double rad_re
     ////
     /// Outer Loop Algorithm
     ////
-    //UW_Mode2 pre_gain = 5e-3 (simulator)
-	//UW_Mode3 pre_gain = 5e-3 (simulator) 
+    //UW_Mode pre_gain = 5e-3 (simulator)
     double pre_gain = 5e-3;  // gain to scale down the radius error into the appropriate order of magnitude
     double r_err = rad_ref - rad_act;
 
-	//UW_Mode_2 dr_gain = 5e-2 (simulator)
-	//UW_Mode_3 dr_gain = 5e-2 (simulator) 
-    double dr_gain = 2.5e-2; // gain to scale down the radius derivative error
-    double dt = 0.02; //delta-t for computing the radius derivative
-	//double forget_factor = 5/10; //forgetting factor to reduce derivative input signal when no new radius information
+	//UW_Mode dr_gain = 1e-2 (simulator)
+    double dr_gain = 1e-2; // gain to scale down the radius derivative error
+
+	double dt = 0.02; //delta-t for computing the radius derivative 
+
+	double der_forget_factor = 0.8; //forgetting factor to reduce derivative input signal when no new radius information
+	double pro_forget_factor = 0.98; //forgetting factor to reduce proportional input signal when no new radius information
 
     //radius derivative, used to maintain a flight path tangential to the desired orbit
-	// Ryan Grimes changed if statement to rad_act - last_rad_act == 0 instead of last_rad_act == 0
     if (last_rad_act == 0){
         //do nothing, can't compute derivative
     }
     else if (dr_count == 0){
         dr_1 = (rad_act - last_rad_act)/dt;
 
-		//if (rad_act - last_rad_act == 0){
-			//dr_1 = dr_5*forget_factor;
-			//r_err = r_err - dr_1*dt_OLC;
-		//}
+		if (rad_act - last_rad_act == 0){
+			dr_1 = dr_5*der_forget_factor;
+			r_err = r_err*pro_forget_factor;
+		}
 
         dr_count++;
     }
     else if (dr_count == 1){
         dr_2 = (rad_act - last_rad_act)/dt;
 
-		//if (rad_act - last_rad_act == 0){
-			//dr_2 = dr_1*forget_factor;
-			//r_err = r_err - dr_2*dt_OLC;
-		//}
+		if (rad_act - last_rad_act == 0){
+			dr_2 = dr_1*der_forget_factor;
+			r_err = r_err*pro_forget_factor;
+		}
 
         dr_count++;
     }
     else if (dr_count == 2){
         dr_3 = (rad_act - last_rad_act)/dt;
 
-		//if (rad_act - last_rad_act == 0){
-			//dr_3 = dr_2*forget_factor;
-			//r_err = r_err - dr_3*dt_OLC;
-		//}
+		if (rad_act - last_rad_act == 0){
+			dr_3 = dr_2*der_forget_factor;
+			r_err = r_err*pro_forget_factor;
+		}
 
         dr_count++;
     }
     else if (dr_count == 3){
         dr_4 = (rad_act - last_rad_act)/dt;
 
-		//if (rad_act - last_rad_act == 0){
-			//dr_4 = dr_3*forget_factor;
-			//r_err = r_err - dr_4*dt_OLC;
-		//}
+		if (rad_act - last_rad_act == 0){
+			dr_4 = dr_3*der_forget_factor;
+			r_err = r_err*pro_forget_factor;
+		}
 
         dr_count++;
     }
     else if (dr_count == 4){
         dr_5 = (rad_act - last_rad_act)/dt;
 
-		//if (rad_act - last_rad_act == 0){
-			//dr_5 = dr_4*forget_factor;
-			//r_err = r_err - dr_5*dt_OLC;
-		//}
+		if (rad_act - last_rad_act == 0){
+			dr_5 = dr_4*der_forget_factor;
+			r_err = r_err*pro_forget_factor;
+		}
 
         dr_count = 0;
     }
@@ -239,3 +239,4 @@ double OuterLoopController::activateController()
 //////////////////////////////////////////////////////////////////////
 
 //==================== End of File =================================
+

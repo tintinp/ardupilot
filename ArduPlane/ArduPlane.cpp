@@ -603,15 +603,15 @@ void Plane::update_flight_mode(void)
 
 			//Calculate desired throttle setting
 
-			double thr_des = 50+(rad_ref-rad_act);
+			double thr_des = 60+(rad_ref-rad_act);
 
 			//Set limitations on throttle settings
 
 			if (thr_des > 100){
 				thr_des = 100;
 			}
-			else if (thr_des < 25){
-				thr_des = 25;
+			else if (thr_des < 40){
+				thr_des = 40;
 			}
 
 			//Set desired throttle setting
@@ -656,15 +656,15 @@ void Plane::update_flight_mode(void)
 
 			//Calculate desired throttle setting
 
-			double thr_des = 50+(rad_ref-rad_act);
+			double thr_des = 60+(rad_ref-rad_act);
 
 			//Set limitations on throttle settings
 
 			if (thr_des > 100){
 				thr_des = 100;
 			}
-			else if (thr_des < 25){
-				thr_des = 25;
+			else if (thr_des < 40){
+				thr_des = 40;
 			}
 
 			//Set desired throttle setting
@@ -676,6 +676,7 @@ void Plane::update_flight_mode(void)
 			channel_roll->servo_out = -g.uw_gain_aileron*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
 			channel_pitch->servo_out = -g.uw_gain_elevator*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
 			steering_control.steering = steering_control.rudder = -g.uw_gain_rudder*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
+
 			break;
 		}
 		
