@@ -457,7 +457,7 @@ const AP_Param::Info Plane::var_info[] = {
        // @Description: Sets the radius of orbit for visual anchoring flight mode (meters)
        // @Values: 50 500
        // @User: Standard
-       GSCALAR(uw_radius, "UW_RADIUS",  100),
+       GSCALAR(uw_radius, "UW_RADIUS",  200),
 
        // @Param: UW_ALTITUDE
        // @DisplayName: Altitide of Orbit
@@ -471,7 +471,7 @@ const AP_Param::Info Plane::var_info[] = {
        // @Description: The actual radius of the orbit for visual anchoring flight mode (meters)
        // @Values: 0 1000
        // @User: Standard
-       GSCALAR(uw_act_radius, "UW_ACT_RADIUS",  100),
+       GSCALAR(uw_act_radius, "UW_ACT_RADIUS",  200),
 
        // @Param: UW_OUTER_GAIN
        // @DisplayName: Outer Loop Gain
