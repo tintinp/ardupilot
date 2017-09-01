@@ -42,7 +42,7 @@ InnerLoopController::InnerLoopController()
 {
 	kPhi = 3;   // roll loop forward gain
 	kP = 0.5;       // roll loop damping gain
-	kR = 1;       // yaw damper gain
+	kR = 0.1;       // yaw damper gain
 	kTheta = 3;   // pitch loop forward gain
 	kQ = 0.5;     // pitch loop damping gain
 	kAlt = 0.5;   // altitude loop forward gain
@@ -216,15 +216,16 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	////
 	/// Yaw Damper
 	////
-	double r_e = r_ref - r;
-	intYawDamper += (kR/5)*r_e*dt;
+	//double r_e = r_ref - r;
+	//intYawDamper += (kR/5)*r_e*dt;
 	// signal saturation
-	if (intYawDamper < -0.7) {
-		intYawDamper = -0.7;
-	} else if (intYawDamper > 0.7) {
-		intYawDamper = 0.7;
-	}
-	double dR = -(r_e*kR + intYawDamper);
+	//if (intYawDamper < -0.7) {
+		//intYawDamper = -0.7;
+	//} else if (intYawDamper > 0.7) {
+		//intYawDamper = 0.7;
+	//}
+	//double dR = -(r_e*kR + intYawDamper);
+	double dR = -kR*phi;
 
 	////
 	/// Altitude Loop

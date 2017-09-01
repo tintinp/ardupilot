@@ -37,7 +37,10 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(check_short_failsafe,   50,   1000),
     SCHED_TASK(ahrs_update,           400,   6400),
     SCHED_TASK(update_speed_height,    50,   1600),
-    SCHED_TASK(update_flight_mode,    400,   1400),
+	//UWAFSL START
+	// reduce update flight mode speed to 50 Hz (was 400 Hz)
+    SCHED_TASK(update_flight_mode,     50,   1400),
+	//UWAFSL END
     SCHED_TASK(stabilize,             400,   3500),
     SCHED_TASK(set_servos,            400,   1600),
     SCHED_TASK(read_control_switch,     7,   1000),
@@ -603,7 +606,7 @@ void Plane::update_flight_mode(void)
 
 			//Calculate desired throttle setting
 
-			double thr_des = 60+(rad_ref-rad_act);
+			double thr_des = 60+0.5*abs(rad_ref-rad_act);
 
 			//Set limitations on throttle settings
 
@@ -656,7 +659,7 @@ void Plane::update_flight_mode(void)
 
 			//Calculate desired throttle setting
 
-			double thr_des = 60+(rad_ref-rad_act);
+			double thr_des = 60+0.5*abs(rad_ref-rad_act);
 
 			//Set limitations on throttle settings
 
