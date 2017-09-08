@@ -111,8 +111,8 @@ double OuterLoopController::computeOuterLoopSignal(double rad_act, double rad_re
     ////
     /// Outer Loop Algorithm
     ////
-    //UW_Mode pre_gain = 1e-3 (simulator)
-    double pre_gain = 1e-3;  // gain to scale down the radius error into the appropriate order of magnitude
+    //UW_Mode pre_gain = 2e-3 (simulator)
+    double pre_gain = 2e-3;  // gain to scale down the radius error into the appropriate order of magnitude
     double r_err = rad_ref - rad_act;
 
 	//UW_Mode dr_gain = 5e-3 (simulator)
@@ -192,11 +192,11 @@ double OuterLoopController::computeOuterLoopSignal(double rad_act, double rad_re
 
     // signal saturation
 	// set limits on psiDotErr 
-    if (psiDotErr < -0.1) {
-        psiDotErr = -0.1;
-    } else if (psiDotErr > 0.1) {
-        psiDotErr = 0.1;
-    }
+    //if (psiDotErr < -0.1) {
+        //psiDotErr = -0.1;
+    //} else if (psiDotErr > 0.1) {
+        //psiDotErr = 0.1;
+    //}
 
     // save input information
     last_rad_act = rad_act;

@@ -42,7 +42,7 @@ InnerLoopController::InnerLoopController()
 {
 	kPhi = 3;   // roll loop forward gain
 	kP = 0.5;       // roll loop damping gain
-	kR = 0.1;       // yaw damper gain
+	kR = 0.01;       // yaw damper gain
 	kTheta = 3;   // pitch loop forward gain
 	kQ = 0.5;     // pitch loop damping gain
 	kAlt = 0.5;   // altitude loop forward gain
@@ -195,6 +195,16 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	//Ryan Grimes reference heading rate to be (vA/rad_act) instead of (vA/rad_ref)
 	//Ryan Grimes updated r_ref equation to multiply by cos(phi) instead of dividing by cos(phi)
 	double vA = sqrt(uB*uB + vB*vB + wB*wB);
+
+	//Ryan Grimes implemented psiDotErr limits here instead of OuterLoopController.cpp
+	//This allows for limitations to take into account vA and rad_act
+
+	if (psiDotErr < -(0.8)*(vA/200)) {
+		psiDotErr = -(0.8)*(vA/200);
+	} else if (psiDotErr > (0.8)*(vA/200)) {
+		psiDotErr = (0.8)*(vA/200);
+	}
+
 	double psiDot = psiDotErr + (vA/rad_act); //Ryan Grimes added rad_act information
 	double r_ref = (vA/rad_act)*cos(phi);
 	

@@ -610,8 +610,8 @@ void Plane::update_flight_mode(void)
 
 			//Set limitations on throttle settings
 
-			if (thr_des > 100){
-				thr_des = 100;
+			if (thr_des > 80){
+				thr_des = 80;
 			}
 			else if (thr_des < 40){
 				thr_des = 40;
@@ -663,8 +663,8 @@ void Plane::update_flight_mode(void)
 
 			//Set limitations on throttle settings
 
-			if (thr_des > 100){
-				thr_des = 100;
+			if (thr_des > 80){
+				thr_des = 80;
 			}
 			else if (thr_des < 40){
 				thr_des = 40;
