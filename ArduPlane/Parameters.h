@@ -292,8 +292,8 @@ public:
 
         //UWAFSL START
 		//Visual Anchoring
-		k_param_uw_act_radius = 208, //208
-		k_param_uw_gain_outer,       //209
+		k_param_uw_pro_gain = 208, //208
+		k_param_uw_der_gain,       //209
 		//UWAFSL END
 
         //
@@ -310,14 +310,15 @@ public:
 
         //UWAFSL START
 		//Visual Anchoring
-		k_param_uw_gain_elevator = 218, //218
-		k_param_uw_gain_rudder,         //219
+		k_param_uw_psiDotErr_lim = 218, //218
+		k_param_uw_pro_forget_factor,   //219
+		k_param_uw_der_forget_factor,   //220
 		//UWAFSL END
 
         //
-        // 220: Waypoint data
+        // 221: Waypoint data
         //
-        k_param_waypoint_mode = 220,
+        k_param_waypoint_mode = 221,
         k_param_command_total,  // unused
         k_param_command_index,  // unused
         k_param_waypoint_radius,
@@ -329,7 +330,7 @@ public:
         k_param_fence_maxalt,
 
         // other objects
-        k_param_sitl = 230,
+        k_param_sitl = 231,
         k_param_obc,
         k_param_rollController,
         k_param_pitchController,
@@ -341,8 +342,8 @@ public:
         k_param_steerController,
 
         //
-        // 240: PID Controllers
-        k_param_pidNavRoll = 240, // unused
+        // 241: PID Controllers
+        k_param_pidNavRoll = 241, // unused
         k_param_pidServoRoll, // unused
         k_param_pidServoPitch, // unused
         k_param_pidNavPitchAirspeed, // unused
@@ -351,12 +352,8 @@ public:
         k_param_pidNavPitchAltitude, // unused
         k_param_pidWheelSteer, // unused
 
-        //UWAFSL START
-		//Visual Anchoring
-		k_param_uw_gain_aileron = 248, //248
-		//UWAFSL END
-
-        k_param_DataFlash = 253, // Logging Group
+		// 249: Logging Group
+        k_param_DataFlash = 249, // Logging Group
 
         // 254,255: reserved
     };
@@ -555,11 +552,11 @@ public:
     //Adding Parameters
     AP_Float uw_radius;
     AP_Float uw_altitude;
-    AP_Float uw_act_radius;
-    AP_Float uw_gain_outer;
-    AP_Float uw_gain_elevator;
-    AP_Float uw_gain_rudder;
-    AP_Float uw_gain_aileron;
+    AP_Float uw_pro_gain;
+    AP_Float uw_der_gain;
+    AP_Float uw_psiDotErr_lim;
+    AP_Float uw_pro_forget_factor;
+    AP_Float uw_der_forget_factor;
     //UWAFSL END
 
     Parameters() :
@@ -584,3 +581,4 @@ public:
 };
 
 extern const AP_Param::Info var_info[];
+

@@ -42,7 +42,7 @@ InnerLoopController::InnerLoopController()
 {
 	kPhi = 3;   // roll loop forward gain
 	kP = 0.5;       // roll loop damping gain
-	kR = 0.01;       // yaw damper gain
+	kR = 1;       // yaw damper gain
 	kTheta = 3;   // pitch loop forward gain
 	kQ = 0.5;     // pitch loop damping gain
 	kAlt = 0.5;   // altitude loop forward gain
@@ -195,18 +195,8 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	//Ryan Grimes reference heading rate to be (vA/rad_act) instead of (vA/rad_ref)
 	//Ryan Grimes updated r_ref equation to multiply by cos(phi) instead of dividing by cos(phi)
 	double vA = sqrt(uB*uB + vB*vB + wB*wB);
-
-	//Ryan Grimes implemented psiDotErr limits here instead of OuterLoopController.cpp
-	//This allows for limitations to take into account vA and rad_act
-
-	if (psiDotErr < -(0.8)*(vA/200)) {
-		psiDotErr = -(0.8)*(vA/200);
-	} else if (psiDotErr > (0.8)*(vA/200)) {
-		psiDotErr = (0.8)*(vA/200);
-	}
-
 	double psiDot = psiDotErr + (vA/rad_act); //Ryan Grimes added rad_act information
-	double r_ref = (vA/rad_act)*cos(phi);
+	double r_ref = (vA/rad_act)*cos(phi); //Reference yaw
 	
 	////
 	/// Roll Inner Loop
@@ -214,10 +204,10 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	double phi_cmd = atan((psiDot*vA) * (1/g));
 
 	//Ryan Grimes implemented limitations on desired bank angle
-	if (phi_cmd < -60) {
-		phi_cmd = -60;
-	} else if (phi_cmd > 60) {
-		phi_cmd = 60;
+	if (phi_cmd < -60*(pi/180)) {
+		phi_cmd = -60*(pi/180);
+	} else if (phi_cmd > 60*(pi/180)) {
+		phi_cmd = 60*(pi/180);
 	}
 
 	double phi_e = phi_cmd - phi;
@@ -226,16 +216,15 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	////
 	/// Yaw Damper
 	////
-	//double r_e = r_ref - r;
-	//intYawDamper += (kR/5)*r_e*dt;
+	double r_e = r_ref - r;
+	intYawDamper += (kR/5)*r_e*dt;
 	// signal saturation
-	//if (intYawDamper < -0.7) {
-		//intYawDamper = -0.7;
-	//} else if (intYawDamper > 0.7) {
-		//intYawDamper = 0.7;
-	//}
-	//double dR = -(r_e*kR + intYawDamper);
-	double dR = -kR*phi;
+	if (intYawDamper < -0.7) {
+		intYawDamper = -0.7;
+	} else if (intYawDamper > 0.7) {
+		intYawDamper = 0.7;
+	}
+	double dR = -(r_e*kR + intYawDamper);
 
 	////
 	/// Altitude Loop
@@ -251,10 +240,10 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 	double theta_cmd = (alt_e*kAlt + intAltitude) * (pi/180);
 
 	// Ryan Grimes implemented limitations on desired pitch
-	if (theta_cmd < -45) {
-		theta_cmd = -45;
-	} else if (theta_cmd > 45) {
-		theta_cmd = 45;
+	if (theta_cmd < -45*(pi/180)) {
+		theta_cmd = -45*(pi/180);
+	} else if (theta_cmd > 45*(pi/180)) {
+		theta_cmd = 45*(pi/180);
 	}
 
 	////
@@ -301,4 +290,5 @@ ControlSurfaceDeflections InnerLoopController::computeControl(double psiDotErr, 
 //////////////////////////////////////////////////////////////////////
 
 //==================== End of File =================================
+
 

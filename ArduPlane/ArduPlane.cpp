@@ -600,13 +600,20 @@ void Plane::update_flight_mode(void)
 			double phi = ahrs.roll;
 			double theta = ahrs.pitch;
 
-			double psiDotErr = uw_mode_2_state.OLC.computeOuterLoopSignal(rad_act, rad_ref)*g.uw_gain_outer;
+			//Read in Outer Loop Controller Parameters
+			double pro_gain = g.uw_pro_gain;
+			double der_gain = g.uw_der_gain;
+			double psiDotErr_lim = g.uw_psiDotErr_lim;
+			double pro_forget_factor = g.uw_pro_forget_factor;
+			double der_forget_factor = g.uw_der_forget_factor;
+
+			double psiDotErr = uw_mode_2_state.OLC.computeOuterLoopSignal(rad_act, rad_ref, pro_gain, der_gain, psiDotErr_lim, pro_forget_factor, der_forget_factor);
 
 			ControlSurfaceDeflections CSD = uw_mode_2_state.ILC.computeControl(psiDotErr, p, q, r, phi, theta, uB, vB, wB, rad_act, alt_ref, alt, dt);
 
 			//Calculate desired throttle setting
 
-			double thr_des = 60+0.5*abs(rad_ref-rad_act);
+			double thr_des = 60+0.5*(rad_ref-rad_act);
 
 			//Set limitations on throttle settings
 
@@ -623,9 +630,9 @@ void Plane::update_flight_mode(void)
 
 			//Set desired deflection angles
 
-			channel_roll->servo_out = -g.uw_gain_aileron*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
-			channel_pitch->servo_out = -g.uw_gain_elevator*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
-			steering_control.steering = steering_control.rudder = -g.uw_gain_rudder*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
+			channel_roll->servo_out = -1*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
+			channel_pitch->servo_out = -1*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
+			steering_control.steering = steering_control.rudder = -1*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
 			break;
 		}
 
@@ -636,7 +643,6 @@ void Plane::update_flight_mode(void)
 			uint8_t ch = 7; //CH_8
 			double rad_act_pwm = hal.rcin->read(ch); //(pwm)
 			double rad_act = rad_act_pwm/100; //(m)
-			//double rad_act = g.uw_act_radius; //(m)
 			double rad_ref = g.uw_radius; //(m)
 			//altitude
 			double alt = relative_altitude(); //(m)
@@ -653,13 +659,20 @@ void Plane::update_flight_mode(void)
 			double phi = ahrs.roll;
 			double theta = ahrs.pitch;
 
-			double psiDotErr = uw_mode_2_state.OLC.computeOuterLoopSignal(rad_act, rad_ref)*g.uw_gain_outer;
+			//Read in Outer Loop Controller Parameters
+			double pro_gain = g.uw_pro_gain;
+			double der_gain = g.uw_der_gain;
+			double psiDotErr_lim = g.uw_psiDotErr_lim;
+			double pro_forget_factor = g.uw_pro_forget_factor;
+			double der_forget_factor = g.uw_der_forget_factor;
+
+			double psiDotErr = uw_mode_2_state.OLC.computeOuterLoopSignal(rad_act, rad_ref, pro_gain, der_gain, psiDotErr_lim, pro_forget_factor, der_forget_factor);
 
 			ControlSurfaceDeflections CSD = uw_mode_2_state.ILC.computeControl(psiDotErr, p, q, r, phi, theta, uB, vB, wB, rad_act, alt_ref, alt, dt);
 
 			//Calculate desired throttle setting
 
-			double thr_des = 60+0.5*abs(rad_ref-rad_act);
+			double thr_des = 60+0.5*(rad_ref-rad_act);
 
 			//Set limitations on throttle settings
 
@@ -676,9 +689,9 @@ void Plane::update_flight_mode(void)
 
 			//Set desired deflection angles
 
-			channel_roll->servo_out = -g.uw_gain_aileron*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
-			channel_pitch->servo_out = -g.uw_gain_elevator*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
-			steering_control.steering = steering_control.rudder = -g.uw_gain_rudder*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
+			channel_roll->servo_out = -1*CSD.GetAileron()*100*180/3.14; //Units: centi-degrees
+			channel_pitch->servo_out = -1*CSD.GetElevator()*100*180/3.14; //Units: centi-degrees
+			steering_control.steering = steering_control.rudder = -1*CSD.GetRudder()*100*180/3.14; //Units: centi-degrees
 
 			break;
 		}
@@ -1117,3 +1130,4 @@ void Plane::update_optical_flow(void)
 #endif
 
 AP_HAL_MAIN_CALLBACKS(&plane);
+

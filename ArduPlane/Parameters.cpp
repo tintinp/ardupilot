@@ -466,40 +466,40 @@ const AP_Param::Info Plane::var_info[] = {
        // @User: Standard
        GSCALAR(uw_altitude, "UW_ALTITUDE",  100),
 
-       // @Param: UW_ACT_RADIUS
-       // @DisplayName: Actual Radius of Orbit
-       // @Description: The actual radius of the orbit for visual anchoring flight mode (meters)
-       // @Values: 0 1000
+       // @Param: UW_PRO_GAIN
+       // @DisplayName: Proportional Outer Loop Gain
+       // @Description: The proportional outer loop gain 
+       // @Values: 0 1
        // @User: Standard
-       GSCALAR(uw_act_radius, "UW_ACT_RADIUS",  200),
+       GSCALAR(uw_pro_gain, "UW_PRO_GAIN",  1.5e-2),
 
-       // @Param: UW_OUTER_GAIN
-       // @DisplayName: Outer Loop Gain
-       // @Description: Sets the proportional gain for PsiDotError
-       // @Values: 0 1000
+       // @Param: UW_DER_GAIN
+       // @DisplayName: Derivative Outer Loop Gain
+       // @Description: The derivative outer loop gain
+       // @Values: 0 1
        // @User: Standard
-       GSCALAR(uw_gain_outer, "UW_GAIN_OUTER",  1),
+       GSCALAR(uw_der_gain, "UW_DER_GAIN",  2.5e-3),
 
-       // @Param: UW_ELEVATOR_GAIN
-       // @DisplayName: Elevator Gain
-       // @Description: The proportion gain on the elevator output signal
-       // @Values: 0 1000
+       // @Param: UW_PSIDOTERR_LIM
+       // @DisplayName: psiDotErr limitations
+       // @Description: Puts limitations on the heading rate error calculations from the outer loop controller
+       // @Values: 0.1 0.5
        // @User: Standard
-       GSCALAR(uw_gain_elevator, "UW_GAIN_ELEVATOR",  1),
+       GSCALAR(uw_psiDotErr_lim, "UW_PSIDOTERR_LIM",  0.5),
 
-       // @Param: UW_RUDDER_GAIN
-       // @DisplayName: Rudder Gain
-       // @Description: The proportion gain on the rudder output signal
-       // @Values: 0 1000
+       // @Param: UW_PRO_FORGET_FACTOR
+       // @DisplayName: Proportional Forgetting Factor
+       // @Description: The proportional forgetting factor for the outer loop controller
+       // @Values: 0 1
        // @User: Standard
-       GSCALAR(uw_gain_rudder, "UW_GAIN_RUDDER",  1),
+       GSCALAR(uw_pro_forget_factor, "UW_PRO_FORGET_FACTOR",  0.98),
 
-       // @Param: UW_AILERON_GAIN
-       // @DisplayName: Aileron Gain
-       // @Description: The proportion gain on the aileron output signal
-       // @Values: 0 1000
+       // @Param: UW_DER_FORGET_FACTOR
+       // @DisplayName: Derivitive Forgetting Factor
+       // @Description: The derivitive Forgetting Factor for the outer loop controller
+       // @Values: 0 1
        // @User: Standard
-       GSCALAR(uw_gain_aileron, "UW_GAIN_AILERON",  1),
+       GSCALAR(uw_der_forget_factor, "UW_DER_FORGET_FACTOR",  0.8),
 
        //UWAFSL END
 
