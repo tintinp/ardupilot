@@ -933,6 +933,7 @@ void Plane::update_navigation()
 	case UW_MODE_2:
 	case UW_MODE_3:
 	case UW_MODE_4:
+    case UW_SIMPLE:
 	//UWAFSL END
 
     case CRUISE:
