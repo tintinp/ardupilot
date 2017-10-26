@@ -708,7 +708,17 @@ void Plane::update_flight_mode(void)
 
 			
 			break;
-		}
+        }
+        
+        case UW_SIMPLE:{
+            double alt = relative_altitude(); //(m)            
+            if (alt > 30) {
+                steering_control.steering = steering_control.rudder = 4500;              
+            } else {
+                steering_control.steering = steering_control.rudder = -4500;                
+            }
+        }
+
 		//UWAFSL END
 
     case TRAINING: {
@@ -1130,4 +1140,3 @@ void Plane::update_optical_flow(void)
 #endif
 
 AP_HAL_MAIN_CALLBACKS(&plane);
-
