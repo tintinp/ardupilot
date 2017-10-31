@@ -729,6 +729,9 @@ void Plane::print_flight_mode(AP_HAL::BetterStream *port, uint8_t mode)
 	case UW_MODE_4:
 		port->print("UW_Mode_4");
 		break;
+    case UW_SIMPLE:
+        port->print("UW_SIMPLE");
+        break;
 	//UWAFSL END
     case QSTABILIZE:
         port->print("QStabilize");

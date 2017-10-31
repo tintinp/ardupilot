@@ -712,7 +712,7 @@ void Plane::update_flight_mode(void)
         
         case UW_SIMPLE:{
             double alt = relative_altitude(); //(m)            
-            if (alt > 30) {
+            if (alt > 2) {
                 steering_control.steering = steering_control.rudder = 4500;              
             } else {
                 steering_control.steering = steering_control.rudder = -4500;                
